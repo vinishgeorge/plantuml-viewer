@@ -3,6 +3,13 @@ const ctx = canvas.getContext('2d');
 let width, height;
 const particles = [];
 const numParticles = 80;
+const umlInput = document.getElementById('umlInput');
+const output = document.getElementById('output');
+const downloadMenu = document.getElementById('downloadMenu');
+const downloadTrigger = document.getElementById('downloadTrigger');
+const downloadList = document.getElementById('downloadList');
+const downloadLinks = downloadList ? downloadList.querySelectorAll('a[data-format]') : [];
+const baseUrl = 'https://www.plantuml.com/plantuml';
 
 function initCanvas() {
   width = canvas.width = window.innerWidth;
@@ -46,33 +53,84 @@ function getCodeFromURL() {
   return codeParam ? decodeURIComponent(codeParam) : '';
 }
 
+function closeDownloadDropdown() {
+  if (!downloadList || !downloadTrigger) return;
+  downloadList.hidden = true;
+  downloadTrigger.setAttribute('aria-expanded', 'false');
+}
+
+function updateDownloadLinks(encoded) {
+  downloadLinks.forEach(link => {
+    const format = link.dataset.format;
+    if (!format) return;
+    link.href = `${baseUrl}/${format}/${encoded}`;
+  });
+}
+
 function renderDiagram() {
-  const input = document.getElementById('umlInput').value.trim();
+  const input = umlInput ? umlInput.value.trim() : '';
   console.log("📝 Code being rendered:", input);
+
   if (!input) {
     console.warn("⚠️ No UML input found.");
+    output.innerHTML = `<p class="preview-placeholder">Paste PlantUML code to see the preview here.</p>`;
+    if (downloadMenu) {
+      downloadMenu.hidden = true;
+    }
+    closeDownloadDropdown();
     return;
   }
 
   try {
     const encoded = plantumlEncoder.encode(input);
-    const baseUrl = 'https://www.plantuml.com/plantuml';
-    const formats = ['png', 'svg', 'txt'];
+    const img = document.createElement('img');
+    img.classList.add('diagram-img');
+    img.src = `${baseUrl}/png/${encoded}`;
+    img.alt = 'Rendered UML diagram';
+    output.innerHTML = '';
+    output.appendChild(img);
 
-    let html = `<h2 class="text-2xl font-semibold mt-6">📷 Preview</h2>`;
-    html += `<img class="diagram-img" src="${baseUrl}/png/${encoded}" alt="UML Diagram" />`;
-
-    html += `<div class="links mt-4"><h3 class="text-xl">⬇️ Download / Export</h3><ul class="space-y-1">`;
-    formats.forEach(fmt => {
-      html += `<li><a href="${baseUrl}/${fmt}/${encoded}" target="_blank">Download ${fmt.toUpperCase()}</a></li>`;
-    });
-    html += `</ul></div>`;
-
-    document.getElementById('output').innerHTML = html;
+    if (downloadMenu) {
+      downloadMenu.hidden = false;
+    }
+    updateDownloadLinks(encoded);
+    closeDownloadDropdown();
     console.log("✅ Diagram rendered successfully.");
   } catch (error) {
+    output.innerHTML = `<p class="preview-placeholder">Something went wrong while rendering the diagram.</p>`;
+    if (downloadMenu) {
+      downloadMenu.hidden = true;
+    }
+    closeDownloadDropdown();
     console.error("❌ Error rendering diagram:", error);
   }
+}
+
+if (downloadTrigger && downloadList && downloadMenu) {
+  downloadTrigger.addEventListener('click', event => {
+    event.stopPropagation();
+    const isHidden = downloadList.hidden;
+    downloadList.hidden = !isHidden ? true : false;
+    downloadTrigger.setAttribute('aria-expanded', String(isHidden));
+  });
+
+  document.addEventListener('click', event => {
+    if (!downloadList.hidden && !downloadMenu.contains(event.target)) {
+      closeDownloadDropdown();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeDownloadDropdown();
+    }
+  });
+}
+
+if (umlInput) {
+  umlInput.addEventListener('input', () => {
+    renderDiagram();
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {

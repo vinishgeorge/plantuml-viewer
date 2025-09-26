@@ -8,21 +8,69 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <canvas id="anim-canvas"></canvas>
 
-<canvas id="anim-canvas"></canvas>
+  <main id="content">
+    <section class="layout">
+      <header class="intro">
+        <h1 class="title">🌿 PlantUML Viewer</h1>
+        <p class="description">
+          Paste your PlantUML markup into the editor and the diagram will render automatically.
+          You can also share a diagram by appending it to the URL with <code>?code=</code>.
+        </p>
+      </header>
 
-<div id="content">
-  <h1 class="text-4xl font-bold mb-4">🌿 PlantUML Viewer</h1>
-  <p class="mb-4">The UML diagram renders automatically if passed via <code>?code=</code>.</p>
-  <div class="diagram-container">
-    <textarea id="umlInput"
-      class="w-full h-40 bg-slate-800 text-slate-100 p-3 rounded-md resize-none"
-      placeholder="@startuml ... @enduml"></textarea>
-    <div id="output"></div>
-  </div>
-</div>
+      <div class="diagram-container">
+        <div class="editor">
+          <label for="umlInput" class="panel-title">PlantUML source</label>
+          <textarea
+            id="umlInput"
+            class="editor-input"
+            placeholder="@startuml\nAlice -> Bob : Hello\n@enduml"
+          ></textarea>
+        </div>
+        <div class="preview">
+          <div class="preview-header">
+            <div class="panel-title">Diagram preview</div>
+            <div class="download-menu" id="downloadMenu" hidden>
+              <button
+                class="download-trigger"
+                id="downloadTrigger"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="downloadList"
+                title="Download diagram"
+              >
+                <span class="sr-only">Download diagram</span>
+                <svg
+                  class="download-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.3a1 1 0 0 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
+                  />
+                </svg>
+              </button>
+              <div class="download-dropdown" id="downloadList" role="menu" hidden>
+                <a data-format="png" role="menuitem" target="_blank" rel="noopener">Download PNG</a>
+                <a data-format="svg" role="menuitem" target="_blank" rel="noopener">Download SVG</a>
+                <a data-format="txt" role="menuitem" target="_blank" rel="noopener">Download TXT</a>
+              </div>
+            </div>
+          </div>
+          <div id="output" class="preview-output">
+            <p class="preview-placeholder">Your rendered diagram will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-<script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
-<script src="script.js"></script>
+  <script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
