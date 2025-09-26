@@ -5,9 +5,11 @@ let columnCount;
 let matrixDrops = [];
 let matrixSpeeds = [];
 const MATRIX_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▒░▓≡+-*/<>♪◊◇◆◈☰☱☲☳☴☵☶☷';
-const MATRIX_FONT_SIZE = 14;
-const MATRIX_MIN_SPEED = 0.35;
-const MATRIX_MAX_SPEED = 0.75;
+const BASE_MATRIX_FONT_SIZE = 14;
+const BASE_MATRIX_MIN_SPEED = 0.35;
+const BASE_MATRIX_MAX_SPEED = 0.75;
+let matrixFontSize = BASE_MATRIX_FONT_SIZE;
+let matrixSpeedMultiplier = 1;
 
 const themeMenuToggle = document.getElementById('themeMenuToggle');
 const themeMenuPanel = document.getElementById('themeMenuPanel');
@@ -54,6 +56,10 @@ const overlayCloseButton = document.getElementById('closeOverlay');
 const zoomInButton = document.getElementById('zoomIn');
 const zoomOutButton = document.getElementById('zoomOut');
 const zoomResetButton = document.getElementById('zoomReset');
+const fontSizeControl = document.getElementById('fontSizeControl');
+const speedControl = document.getElementById('speedControl');
+const fontSizeValueLabel = document.getElementById('fontSizeValue');
+const speedValueLabel = document.getElementById('speedValue');
 
 const ZOOM_STEP = 0.25;
 const MIN_ZOOM = 0.5;
@@ -62,6 +68,47 @@ const MAX_ZOOM = 3;
 let currentDiagramSrc = '';
 let currentDiagramAlt = 'Rendered UML diagram';
 let overlayZoom = 1;
+
+if (fontSizeControl) {
+  const initialFontSize = Number(fontSizeControl.value);
+  if (Number.isFinite(initialFontSize) && initialFontSize > 0) {
+    matrixFontSize = initialFontSize;
+  }
+}
+
+if (speedControl) {
+  const initialSpeedMultiplier = Number(speedControl.value);
+  if (Number.isFinite(initialSpeedMultiplier) && initialSpeedMultiplier > 0) {
+    matrixSpeedMultiplier = initialSpeedMultiplier;
+  }
+}
+
+function updateFontSizeLabel() {
+  if (fontSizeValueLabel) {
+    fontSizeValueLabel.textContent = `${Math.round(matrixFontSize)}px`;
+  }
+}
+
+function formatSpeedMultiplier(value) {
+  const fixed = value.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  return `${fixed || '1'}×`;
+}
+
+function updateSpeedLabel() {
+  if (speedValueLabel) {
+    speedValueLabel.textContent = formatSpeedMultiplier(matrixSpeedMultiplier);
+  }
+}
+
+updateFontSizeLabel();
+updateSpeedLabel();
+
+function getRandomSpeed() {
+  const baseRange =
+    BASE_MATRIX_MIN_SPEED +
+    Math.random() * (BASE_MATRIX_MAX_SPEED - BASE_MATRIX_MIN_SPEED);
+  return baseRange * matrixSpeedMultiplier;
+}
 
 function updateActiveThemeButton() {
   themeOptionButtons.forEach(button => {
@@ -130,20 +177,18 @@ function initCanvas() {
 
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
-  columnCount = Math.floor(width / MATRIX_FONT_SIZE) + 1;
+  columnCount = Math.floor(width / matrixFontSize) + 1;
   matrixDrops = new Array(columnCount)
     .fill(0)
     .map(() => -Math.random() * 20);
   matrixSpeeds = new Array(columnCount)
     .fill(0)
-    .map(() =>
-      MATRIX_MIN_SPEED + Math.random() * (MATRIX_MAX_SPEED - MATRIX_MIN_SPEED)
-    );
+    .map(() => getRandomSpeed());
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = currentTheme.background;
   ctx.fillRect(0, 0, width, height);
-  ctx.font = `${MATRIX_FONT_SIZE}px 'IBM Plex Mono', 'Fira Code', monospace`;
+  ctx.font = `${matrixFontSize}px 'IBM Plex Mono', 'Fira Code', monospace`;
 }
 
 function drawMatrixFrame() {
@@ -161,22 +206,50 @@ function drawMatrixFrame() {
     const character = MATRIX_CHARACTERS.charAt(
       Math.floor(Math.random() * MATRIX_CHARACTERS.length)
     );
-    const x = column * MATRIX_FONT_SIZE;
-    const y = matrixDrops[column] * MATRIX_FONT_SIZE;
+    const x = column * matrixFontSize;
+    const y = matrixDrops[column] * matrixFontSize;
 
     ctx.fillText(character, x, y);
 
     if (y > height && Math.random() > currentTheme.resetThreshold) {
       matrixDrops[column] = -Math.random() * 10;
-      matrixSpeeds[column] =
-        MATRIX_MIN_SPEED +
-        Math.random() * (MATRIX_MAX_SPEED - MATRIX_MIN_SPEED);
+      matrixSpeeds[column] = getRandomSpeed();
     } else {
       matrixDrops[column] = matrixDrops[column] + matrixSpeeds[column];
     }
   }
 
   requestAnimationFrame(drawMatrixFrame);
+}
+
+if (fontSizeControl) {
+  fontSizeControl.addEventListener('input', event => {
+    const nextFontSize = Number(event.target.value);
+    if (!Number.isFinite(nextFontSize) || nextFontSize <= 0) {
+      return;
+    }
+    matrixFontSize = nextFontSize;
+    updateFontSizeLabel();
+    initCanvas();
+  });
+}
+
+if (speedControl) {
+  speedControl.addEventListener('input', event => {
+    const nextMultiplier = Number(event.target.value);
+    if (!Number.isFinite(nextMultiplier) || nextMultiplier <= 0) {
+      return;
+    }
+    const previousMultiplier = matrixSpeedMultiplier;
+    matrixSpeedMultiplier = nextMultiplier;
+    if (!Number.isFinite(previousMultiplier) || previousMultiplier <= 0) {
+      matrixSpeeds = matrixSpeeds.map(() => getRandomSpeed());
+    } else {
+      const ratio = nextMultiplier / previousMultiplier;
+      matrixSpeeds = matrixSpeeds.map(speed => speed * ratio);
+    }
+    updateSpeedLabel();
+  });
 }
 
 const storedTheme = (() => {
