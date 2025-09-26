@@ -1,58 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PlantUML Renderer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlantUML Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    textarea { width: 100%; height: 200px; font-family: monospace; }
-    img { margin-top: 1em; border: 1px solid #ccc; }
-    .links { margin-top: 1em; }
+    body, html {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+    #anim-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: #0f172a; /* dark background */
+    }
+    #content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 1rem;
+      color: #e0e7ff;
+    }
+    .diagram-container {
+      max-width: 90%;
+      text-align: center;
+    }
+    .diagram-img {
+      border: 2px solid #64748b;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 20px rgba(100, 116, 139, 0.5);
+      margin-top: 1rem;
+      max-width: 100%;
+      height: auto;
+    }
+    .links ul {
+      list-style: none;
+      padding: 0;
+    }
+    .links li a {
+      color: #93c5fd;
+    }
   </style>
 </head>
 <body>
 
-<h1>🌿 PlantUML Diagram Renderer</h1>
-<p>Paste your PlantUML code below or use a link with <code>?code=</code> in the URL to auto-render.</p>
+<canvas id="anim-canvas"></canvas>
 
-<textarea id="umlInput"></textarea>
-<br>
-<button onclick="renderDiagram()">Render Diagram</button>
-
-<div id="output"></div>
+<div id="content">
+  <h1 class="text-4xl font-bold mb-4">🌿 PlantUML Viewer</h1>
+  <p class="mb-4">The UML diagram renders automatically if passed via <code>?code=</code>.</p>
+  <div class="diagram-container">
+    <textarea id="umlInput"
+      class="w-full h-40 bg-slate-800 text-slate-100 p-3 rounded-md resize-none"
+      placeholder="@startuml ... @enduml"></textarea>
+    <div id="output"></div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
 <script>
-  function getCodeFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('code') ? decodeURIComponent(params.get('code')) : '';
-  }
+// Canvas particle animation – simple moving dots
+const canvas = document.getElementById('anim-canvas');
+const ctx = canvas.getContext('2d');
+let width, height;
+const particles = [];
+const numParticles = 80;
 
-  function renderDiagram() {
-    const input = document.getElementById('umlInput').value;
-    const encoded = plantumlEncoder.encode(input);
-    const baseUrl = 'https://www.plantuml.com/plantuml';
-
-    const formats = ['png', 'svg', 'txt'];
-
-    let html = `<h2>📷 Preview</h2>`;
-    html += `<img src="${baseUrl}/png/${encoded}" alt="UML Diagram" />`;
-
-    html += `<div class="links"><h3>⬇️ Download / Export</h3><ul>`;
-    formats.forEach(format => {
-      html += `<li><a href="${baseUrl}/${format}/${encoded}" target="_blank">Download ${format.toUpperCase()}</a></li>`;
+function initCanvas() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  particles.length = 0;
+  for (let i = 0; i < numParticles; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      size: 1 + Math.random() * 2
     });
-    html += `</ul></div>`;
-
-    document.getElementById('output').innerHTML = html;
   }
+}
+function animateParticles() {
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#64748b';
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > width) p.vx *= -1;
+    if (p.y < 0 || p.y > height) p.vy *= -1;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animateParticles);
+}
+window.addEventListener('resize', initCanvas);
+initCanvas();
+animateParticles();
 
-  // Auto-load code from URL if present
-  const autoCode = getCodeFromURL();
-  if (autoCode) {
-    document.getElementById('umlInput').value = autoCode;
+// PlantUML rendering logic
+function getCodeFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('code') ? decodeURIComponent(params.get('code')) : '';
+}
+
+function renderDiagram() {
+  const input = document.getElementById('umlInput').value.trim();
+  if (!input) return;
+  const encoded = plantumlEncoder.encode(input);
+  const baseUrl = 'https://www.plantuml.com/plantuml';
+  const formats = ['png', 'svg', 'txt'];
+
+  let html = `<h2 class="text-2xl font-semibold mt-6">📷 Preview</h2>`;
+  html += `<img class="diagram-img" src="${baseUrl}/png/${encoded}" alt="UML Diagram" />`;
+
+  html += `<div class="links mt-4"><h3 class="text-xl">⬇️ Download / Export</h3><ul class="space-y-1">`;
+  formats.forEach(fmt => {
+    html += `<li><a href="${baseUrl}/${fmt}/${encoded}" target="_blank">Download ${fmt.toUpperCase()}</a></li>`;
+  });
+  html += `</ul></div>`;
+
+  document.getElementById('output').innerHTML = html;
+}
+
+// Auto-fill and render on load if code is present
+window.addEventListener('DOMContentLoaded', () => {
+  const code = getCodeFromURL();
+  if (code) {
+    document.getElementById('umlInput').value = code;
     renderDiagram();
   }
+});
 </script>
 
 </body>
