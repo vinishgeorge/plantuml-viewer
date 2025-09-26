@@ -30,8 +30,41 @@
           ></textarea>
         </div>
         <div class="preview">
-          <div class="panel-title">Diagram preview</div>
-          <div id="output" class="preview-output"></div>
+          <div class="preview-header">
+            <div class="panel-title">Diagram preview</div>
+            <div class="download-menu" id="downloadMenu" hidden>
+              <button
+                class="download-trigger"
+                id="downloadTrigger"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="downloadList"
+                title="Download diagram"
+              >
+                <span class="sr-only">Download diagram</span>
+                <svg
+                  class="download-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.3a1 1 0 0 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
+                  />
+                </svg>
+              </button>
+              <div class="download-dropdown" id="downloadList" role="menu" hidden>
+                <a data-format="png" role="menuitem" target="_blank" rel="noopener">Download PNG</a>
+                <a data-format="svg" role="menuitem" target="_blank" rel="noopener">Download SVG</a>
+                <a data-format="txt" role="menuitem" target="_blank" rel="noopener">Download TXT</a>
+              </div>
+            </div>
+          </div>
+          <div id="output" class="preview-output">
+            <p class="preview-placeholder">Your rendered diagram will appear here.</p>
+          </div>
         </div>
       </div>
     </section>
