@@ -10,6 +10,55 @@
 <body>
   <canvas id="anim-canvas"></canvas>
 
+  <nav class="theme-menu" aria-label="Background themes">
+    <button
+      id="themeMenuToggle"
+      class="theme-menu-toggle"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="themeMenuPanel"
+    >
+      <span aria-hidden="true">☰</span>
+      <span class="sr-only">Toggle background themes</span>
+    </button>
+    <div id="themeMenuPanel" class="theme-menu-panel" role="menu" hidden tabindex="-1">
+      <h2 class="theme-menu-title">Matrix backgrounds</h2>
+      <div class="theme-menu-options">
+        <button
+          class="theme-option-button"
+          data-theme-option="matrix-classic"
+          role="menuitemradio"
+          aria-checked="false"
+        >
+          <span class="theme-option-label">
+            <span class="theme-option-name">Neo green</span>
+            <span class="theme-option-description">Black canvas with cascading green glyphs</span>
+          </span>
+          <span class="theme-swatch" aria-hidden="true">
+            <span style="background:#050505"></span>
+            <span style="background:#22c55e"></span>
+          </span>
+        </button>
+        <button
+          class="theme-option-button"
+          data-theme-option="matrix-inverse"
+          role="menuitemradio"
+          aria-checked="false"
+        >
+          <span class="theme-option-label">
+            <span class="theme-option-name">Ghost matrix</span>
+            <span class="theme-option-description">White canvas with crisp black glyphs</span>
+          </span>
+          <span class="theme-swatch" aria-hidden="true">
+            <span style="background:#f8fafc"></span>
+            <span style="background:#111827"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
   <main id="content">
     <section class="layout">
       <header class="intro">

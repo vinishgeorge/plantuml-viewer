@@ -1,8 +1,42 @@
 const canvas = document.getElementById('anim-canvas');
 const ctx = canvas.getContext('2d');
 let width, height;
-const particles = [];
-const numParticles = 80;
+let columnCount;
+let matrixDrops = [];
+const MATRIX_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▒░▓≡+-*/<>♪◊◇◆◈☰☱☲☳☴☵☶☷';
+const MATRIX_FONT_SIZE = 18;
+
+const themeMenuToggle = document.getElementById('themeMenuToggle');
+const themeMenuPanel = document.getElementById('themeMenuPanel');
+const themeOptionButtons = themeMenuPanel
+  ? themeMenuPanel.querySelectorAll('[data-theme-option]')
+  : [];
+const THEME_STORAGE_KEY = 'plantuml-viewer-theme';
+
+const THEMES = {
+  'matrix-classic': {
+    bodyClass: null,
+    glyph: '#22c55e',
+    glow: 'rgba(34, 197, 94, 0.6)',
+    shadowBlur: 12,
+    fadeFill: 'rgba(0, 0, 0, 0.08)',
+    background: 'rgba(0, 0, 0, 0.35)',
+    resetThreshold: 0.975
+  },
+  'matrix-inverse': {
+    bodyClass: 'theme-matrix-light',
+    glyph: '#111827',
+    glow: 'rgba(17, 24, 39, 0.18)',
+    shadowBlur: 4,
+    fadeFill: 'rgba(248, 250, 252, 0.18)',
+    background: 'rgba(248, 250, 252, 0.5)',
+    resetThreshold: 0.965
+  }
+};
+
+let currentThemeKey = 'matrix-classic';
+let currentTheme = THEMES[currentThemeKey];
+let activeBodyThemeClass = null;
 const umlInput = document.getElementById('umlInput');
 const output = document.getElementById('output');
 const downloadMenu = document.getElementById('downloadMenu');
@@ -26,39 +60,163 @@ let currentDiagramSrc = '';
 let currentDiagramAlt = 'Rendered UML diagram';
 let overlayZoom = 1;
 
-function initCanvas() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-  particles.length = 0;
-  for (let i = 0; i < numParticles; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      size: 1 + Math.random() * 2
-    });
+function updateActiveThemeButton() {
+  themeOptionButtons.forEach(button => {
+    const isActive = button.dataset.themeOption === currentThemeKey;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-checked', String(isActive));
+  });
+}
+
+function applyTheme(key, { skipPersist = false, skipCanvasInit = false } = {}) {
+  if (!THEMES[key]) {
+    key = 'matrix-classic';
+  }
+  currentThemeKey = key;
+  currentTheme = THEMES[currentThemeKey];
+
+  if (activeBodyThemeClass) {
+    document.body.classList.remove(activeBodyThemeClass);
+  }
+
+  if (currentTheme.bodyClass) {
+    document.body.classList.add(currentTheme.bodyClass);
+    activeBodyThemeClass = currentTheme.bodyClass;
+  } else {
+    activeBodyThemeClass = null;
+  }
+  updateActiveThemeButton();
+
+  if (!skipPersist) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, currentThemeKey);
+    } catch (storageError) {
+      console.warn('Unable to persist theme preference:', storageError);
+    }
+  }
+
+  if (!skipCanvasInit) {
+    initCanvas();
   }
 }
 
-function animateParticles() {
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#64748b';
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.x < 0 || p.x > width) p.vx *= -1;
-    if (p.y < 0 || p.y > height) p.vy *= -1;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  requestAnimationFrame(animateParticles);
+function openThemeMenu() {
+  if (!themeMenuPanel || !themeMenuToggle) return;
+  themeMenuPanel.hidden = false;
+  themeMenuToggle.setAttribute('aria-expanded', 'true');
+  themeMenuPanel.focus();
 }
 
-window.addEventListener('resize', initCanvas);
+function closeThemeMenu() {
+  if (!themeMenuPanel || !themeMenuToggle) return;
+  themeMenuPanel.hidden = true;
+  themeMenuToggle.setAttribute('aria-expanded', 'false');
+}
+
+function toggleThemeMenu() {
+  if (!themeMenuPanel) return;
+  if (themeMenuPanel.hidden) {
+    openThemeMenu();
+  } else {
+    closeThemeMenu();
+  }
+}
+
+function initCanvas() {
+  if (!canvas || !ctx) return;
+
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  columnCount = Math.floor(width / MATRIX_FONT_SIZE) + 1;
+  matrixDrops = new Array(columnCount).fill(0);
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = currentTheme.background;
+  ctx.fillRect(0, 0, width, height);
+  ctx.font = `${MATRIX_FONT_SIZE}px 'IBM Plex Mono', 'Fira Code', monospace`;
+}
+
+function drawMatrixFrame() {
+  if (!ctx) return;
+
+  ctx.fillStyle = currentTheme.fadeFill;
+  ctx.shadowBlur = 0;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = currentTheme.glyph;
+  ctx.shadowColor = currentTheme.glow;
+  ctx.shadowBlur = currentTheme.shadowBlur;
+
+  for (let column = 0; column < columnCount; column++) {
+    const character = MATRIX_CHARACTERS.charAt(
+      Math.floor(Math.random() * MATRIX_CHARACTERS.length)
+    );
+    const x = column * MATRIX_FONT_SIZE;
+    const y = matrixDrops[column] * MATRIX_FONT_SIZE;
+
+    ctx.fillText(character, x, y);
+
+    if (y > height && Math.random() > currentTheme.resetThreshold) {
+      matrixDrops[column] = 0;
+    } else {
+      matrixDrops[column] = matrixDrops[column] + 1;
+    }
+  }
+
+  requestAnimationFrame(drawMatrixFrame);
+}
+
+const storedTheme = (() => {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (storageError) {
+    console.warn('Unable to read theme preference:', storageError);
+    return null;
+  }
+})();
+
+applyTheme(storedTheme || currentThemeKey, { skipPersist: true, skipCanvasInit: true });
 initCanvas();
-animateParticles();
+drawMatrixFrame();
+
+window.addEventListener('resize', initCanvas);
+
+if (themeMenuToggle) {
+  themeMenuToggle.addEventListener('click', event => {
+    event.stopPropagation();
+    toggleThemeMenu();
+  });
+}
+
+if (themeMenuPanel) {
+  document.addEventListener('click', event => {
+    if (!themeMenuPanel.hidden && !themeMenuPanel.contains(event.target) && event.target !== themeMenuToggle) {
+      closeThemeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeThemeMenu();
+      if (themeMenuToggle) {
+        themeMenuToggle.focus();
+      }
+    }
+  });
+}
+
+themeOptionButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const nextTheme = button.dataset.themeOption;
+    if (nextTheme !== currentThemeKey) {
+      applyTheme(nextTheme);
+    }
+    closeThemeMenu();
+    if (themeMenuToggle) {
+      themeMenuToggle.focus();
+    }
+  });
+});
 
 function getCodeFromURL() {
   const params = new URLSearchParams(window.location.search);
