@@ -32,7 +32,18 @@
         <div class="preview">
           <div class="preview-header">
             <div class="panel-title">Diagram preview</div>
-            <div class="download-menu" id="downloadMenu" hidden>
+            <div class="preview-actions">
+              <button
+                id="openOverlay"
+                class="preview-action"
+                type="button"
+                title="Expand diagram"
+                hidden
+              >
+                <span aria-hidden="true">⤢</span>
+                <span class="sr-only">Expand diagram</span>
+              </button>
+              <div class="download-menu" id="downloadMenu" hidden>
               <button
                 class="download-trigger"
                 id="downloadTrigger"
@@ -55,10 +66,11 @@
                   />
                 </svg>
               </button>
-              <div class="download-dropdown" id="downloadList" role="menu" hidden>
-                <a data-format="png" role="menuitem" target="_blank" rel="noopener">Download PNG</a>
-                <a data-format="svg" role="menuitem" target="_blank" rel="noopener">Download SVG</a>
-                <a data-format="txt" role="menuitem" target="_blank" rel="noopener">Download TXT</a>
+                <div class="download-dropdown" id="downloadList" role="menu" hidden>
+                  <a data-format="png" role="menuitem" target="_blank" rel="noopener">Download PNG</a>
+                  <a data-format="svg" role="menuitem" target="_blank" rel="noopener">Download SVG</a>
+                  <a data-format="txt" role="menuitem" target="_blank" rel="noopener">Download TXT</a>
+                </div>
               </div>
             </div>
           </div>
@@ -69,6 +81,34 @@
       </div>
     </section>
   </main>
+
+  <div id="diagramOverlay" class="diagram-overlay" hidden>
+    <div class="overlay-frame" role="dialog" aria-modal="true" aria-label="Expanded PlantUML diagram">
+      <div class="overlay-toolbar">
+        <div class="overlay-zoom-controls" role="group" aria-label="Zoom controls">
+          <button id="zoomOut" class="overlay-button" type="button" title="Zoom out">
+            <span aria-hidden="true">−</span>
+            <span class="sr-only">Zoom out</span>
+          </button>
+          <button id="zoomReset" class="overlay-button" type="button" title="Reset zoom">
+            <span aria-hidden="true">⟳</span>
+            <span class="sr-only">Reset zoom</span>
+          </button>
+          <button id="zoomIn" class="overlay-button" type="button" title="Zoom in">
+            <span aria-hidden="true">＋</span>
+            <span class="sr-only">Zoom in</span>
+          </button>
+        </div>
+        <button id="closeOverlay" class="overlay-button close-button" type="button" title="Close overlay">
+          <span aria-hidden="true">✕</span>
+          <span class="sr-only">Close overlay</span>
+        </button>
+      </div>
+      <div class="overlay-stage">
+        <img id="overlayImage" class="overlay-image" alt="Expanded UML diagram" />
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
   <script src="script.js"></script>
