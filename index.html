@@ -13,25 +13,9 @@
 <body>
 
 <h1>🌿 PlantUML Diagram Renderer</h1>
-<p>Paste your PlantUML code below and click <strong>Render</strong>.</p>
+<p>Paste your PlantUML code below or use a link with <code>?code=</code> in the URL to auto-render.</p>
 
-<textarea id="umlInput">@startuml
-class User {
-  -id: int
-  -name: string
-  +login(): boolean
-}
-
-class Account {
-  -accountNumber: string
-  -balance: float
-  +deposit(amount: float): void
-  +withdraw(amount: float): boolean
-}
-
-User "1" -- "many" Account : owns >
-@enduml</textarea>
-
+<textarea id="umlInput"></textarea>
 <br>
 <button onclick="renderDiagram()">Render Diagram</button>
 
@@ -39,6 +23,11 @@ User "1" -- "many" Account : owns >
 
 <script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
 <script>
+  function getCodeFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('code') ? decodeURIComponent(params.get('code')) : '';
+  }
+
   function renderDiagram() {
     const input = document.getElementById('umlInput').value;
     const encoded = plantumlEncoder.encode(input);
@@ -56,6 +45,13 @@ User "1" -- "many" Account : owns >
     html += `</ul></div>`;
 
     document.getElementById('output').innerHTML = html;
+  }
+
+  // Auto-load code from URL if present
+  const autoCode = getCodeFromURL();
+  if (autoCode) {
+    document.getElementById('umlInput').value = autoCode;
+    renderDiagram();
   }
 </script>
 
