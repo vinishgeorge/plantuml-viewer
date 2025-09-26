@@ -146,6 +146,7 @@ body {
   background: rgba(59, 130, 246, 0.15);
   color: #bfdbfe;
   outline: none;
+
 }
 
 .panel-title {
@@ -192,6 +193,7 @@ body {
   height: auto;
 }
 
+
 .preview-placeholder {
   margin: 0;
   font-size: 0.95rem;
@@ -225,6 +227,7 @@ body {
     align-items: start;
   }
 }
+
 
 @media (min-width: 1024px) {
   #content {
