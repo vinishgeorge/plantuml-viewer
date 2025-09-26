@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PlantUML Renderer</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    textarea { width: 100%; height: 200px; font-family: monospace; }
+    img { margin-top: 1em; border: 1px solid #ccc; }
+    .links { margin-top: 1em; }
+  </style>
+</head>
+<body>
+
+<h1>🌿 PlantUML Diagram Renderer</h1>
+<p>Paste your PlantUML code below and click <strong>Render</strong>.</p>
+
+<textarea id="umlInput">@startuml
+class User {
+  -id: int
+  -name: string
+  +login(): boolean
+}
+
+class Account {
+  -accountNumber: string
+  -balance: float
+  +deposit(amount: float): void
+  +withdraw(amount: float): boolean
+}
+
+User "1" -- "many" Account : owns >
+@enduml</textarea>
+
+<br>
+<button onclick="renderDiagram()">Render Diagram</button>
+
+<div id="output"></div>
+
+<script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
+<script>
+  function renderDiagram() {
+    const input = document.getElementById('umlInput').value;
+    const encoded = plantumlEncoder.encode(input);
+    const baseUrl = 'https://www.plantuml.com/plantuml';
+
+    const formats = ['png', 'svg', 'txt'];
+
+    let html = `<h2>📷 Preview</h2>`;
+    html += `<img src="${baseUrl}/png/${encoded}" alt="UML Diagram" />`;
+
+    html += `<div class="links"><h3>⬇️ Download / Export</h3><ul>`;
+    formats.forEach(format => {
+      html += `<li><a href="${baseUrl}/${format}/${encoded}" target="_blank">Download ${format.toUpperCase()}</a></li>`;
+    });
+    html += `</ul></div>`;
+
+    document.getElementById('output').innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
