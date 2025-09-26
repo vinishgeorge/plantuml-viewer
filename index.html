@@ -59,6 +59,39 @@
     </div>
   </nav>
 
+  <section class="matrix-controls" aria-label="Matrix animation controls">
+    <div class="matrix-control">
+      <label class="matrix-control-label" for="fontSizeControl">Glyph size</label>
+      <div class="matrix-control-input">
+        <input
+          id="fontSizeControl"
+          class="matrix-slider"
+          type="range"
+          min="10"
+          max="28"
+          step="1"
+          value="14"
+        />
+        <span id="fontSizeValue" class="matrix-control-value" aria-live="polite">14px</span>
+      </div>
+    </div>
+    <div class="matrix-control">
+      <label class="matrix-control-label" for="speedControl">Glyph speed</label>
+      <div class="matrix-control-input">
+        <input
+          id="speedControl"
+          class="matrix-slider"
+          type="range"
+          min="0.5"
+          max="2"
+          step="0.05"
+          value="1"
+        />
+        <span id="speedValue" class="matrix-control-value" aria-live="polite">1×</span>
+      </div>
+    </div>
+  </section>
+
   <main id="content">
     <section class="layout">
       <header class="intro">
