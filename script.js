@@ -3,8 +3,11 @@ const ctx = canvas.getContext('2d');
 let width, height;
 let columnCount;
 let matrixDrops = [];
+let matrixSpeeds = [];
 const MATRIX_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▒░▓≡+-*/<>♪◊◇◆◈☰☱☲☳☴☵☶☷';
-const MATRIX_FONT_SIZE = 18;
+const MATRIX_FONT_SIZE = 14;
+const MATRIX_MIN_SPEED = 0.35;
+const MATRIX_MAX_SPEED = 0.75;
 
 const themeMenuToggle = document.getElementById('themeMenuToggle');
 const themeMenuPanel = document.getElementById('themeMenuPanel');
@@ -128,7 +131,14 @@ function initCanvas() {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
   columnCount = Math.floor(width / MATRIX_FONT_SIZE) + 1;
-  matrixDrops = new Array(columnCount).fill(0);
+  matrixDrops = new Array(columnCount)
+    .fill(0)
+    .map(() => -Math.random() * 20);
+  matrixSpeeds = new Array(columnCount)
+    .fill(0)
+    .map(() =>
+      MATRIX_MIN_SPEED + Math.random() * (MATRIX_MAX_SPEED - MATRIX_MIN_SPEED)
+    );
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = currentTheme.background;
@@ -157,9 +167,12 @@ function drawMatrixFrame() {
     ctx.fillText(character, x, y);
 
     if (y > height && Math.random() > currentTheme.resetThreshold) {
-      matrixDrops[column] = 0;
+      matrixDrops[column] = -Math.random() * 10;
+      matrixSpeeds[column] =
+        MATRIX_MIN_SPEED +
+        Math.random() * (MATRIX_MAX_SPEED - MATRIX_MIN_SPEED);
     } else {
-      matrixDrops[column] = matrixDrops[column] + 1;
+      matrixDrops[column] = matrixDrops[column] + matrixSpeeds[column];
     }
   }
 
