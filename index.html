@@ -8,21 +8,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <canvas id="anim-canvas"></canvas>
 
-<canvas id="anim-canvas"></canvas>
+  <main id="content">
+    <section class="layout">
+      <header class="intro">
+        <h1 class="title">🌿 PlantUML Viewer</h1>
+        <p class="description">
+          Paste your PlantUML markup into the editor and the diagram will render automatically.
+          You can also share a diagram by appending it to the URL with <code>?code=</code>.
+        </p>
+      </header>
 
-<div id="content">
-  <h1 class="text-4xl font-bold mb-4">🌿 PlantUML Viewer</h1>
-  <p class="mb-4">The UML diagram renders automatically if passed via <code>?code=</code>.</p>
-  <div class="diagram-container">
-    <textarea id="umlInput"
-      class="w-full h-40 bg-slate-800 text-slate-100 p-3 rounded-md resize-none"
-      placeholder="@startuml ... @enduml"></textarea>
-    <div id="output"></div>
-  </div>
-</div>
+      <div class="diagram-container">
+        <div class="editor">
+          <label for="umlInput" class="panel-title">PlantUML source</label>
+          <textarea
+            id="umlInput"
+            class="editor-input"
+            placeholder="@startuml\nAlice -> Bob : Hello\n@enduml"
+          ></textarea>
+        </div>
+        <div class="preview">
+          <div class="panel-title">Diagram preview</div>
+          <div id="output" class="preview-output"></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-<script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
-<script src="script.js"></script>
+  <script src="https://unpkg.com/plantuml-encoder/dist/plantuml-encoder.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
