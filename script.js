@@ -43,6 +43,7 @@ let currentThemeKey = 'matrix-classic';
 let currentTheme = THEMES[currentThemeKey];
 let activeBodyThemeClass = null;
 const umlInput = document.getElementById('umlInput');
+const lineNumbers = document.getElementById('umlLineNumbers');
 const output = document.getElementById('output');
 const downloadMenu = document.getElementById('downloadMenu');
 const downloadTrigger = document.getElementById('downloadTrigger');
@@ -102,6 +103,17 @@ function updateSpeedLabel() {
 
 updateFontSizeLabel();
 updateSpeedLabel();
+
+function updateLineNumbers() {
+  if (!umlInput || !lineNumbers) return;
+  const value = umlInput.value;
+  const lineCount = Math.max(1, value.split('\n').length);
+  const markup = Array.from({ length: lineCount }, (_, index) => `<span>${index + 1}</span>`).join('');
+  lineNumbers.innerHTML = markup;
+  lineNumbers.scrollTop = umlInput.scrollTop;
+}
+
+updateLineNumbers();
 
 function getRandomSpeed() {
   const baseRange =
@@ -440,7 +452,14 @@ if (downloadTrigger && downloadList && downloadMenu) {
 
 if (umlInput) {
   umlInput.addEventListener('input', () => {
+    updateLineNumbers();
     renderDiagram();
+  });
+
+  umlInput.addEventListener('scroll', () => {
+    if (lineNumbers) {
+      lineNumbers.scrollTop = umlInput.scrollTop;
+    }
   });
 }
 
@@ -489,12 +508,12 @@ if (output) {
 window.addEventListener('DOMContentLoaded', () => {
   const code = getCodeFromURL();
   console.log("🧠 Decoded code from URL:", code);
-  if (code) {
-    const textarea = document.getElementById('umlInput');
-    textarea.value = code;
+  if (code && umlInput) {
+    umlInput.value = code;
     console.log("✅ Textarea populated.");
     renderDiagram();
   } else {
     console.warn("⚠️ No 'code' parameter found.");
   }
+  updateLineNumbers();
 });

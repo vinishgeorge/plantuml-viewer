@@ -109,11 +109,18 @@
       <div class="diagram-container">
         <div class="editor">
           <label for="umlInput" class="panel-title">PlantUML source</label>
-          <textarea
-            id="umlInput"
-            class="editor-input"
-            placeholder="@startuml\nAlice -> Bob : Hello\n@enduml"
-          ></textarea>
+          <div class="editor-wrapper">
+            <div
+              id="umlLineNumbers"
+              class="editor-line-numbers"
+              aria-hidden="true"
+            ></div>
+            <textarea
+              id="umlInput"
+              class="editor-input"
+              placeholder="@startuml\nAlice -> Bob : Hello\n@enduml"
+            ></textarea>
+          </div>
         </div>
         <div class="preview">
           <div class="preview-header">
