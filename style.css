@@ -347,24 +347,65 @@ body.theme-matrix-light {
   color: var(--text-muted);
 }
 
+.editor-wrapper {
+  position: relative;
+  display: flex;
+  border-radius: 0.75rem;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-soft-bg);
+  overflow: hidden;
+}
+
+.editor-wrapper:focus-within {
+  border-color: var(--button-hover-border);
+  box-shadow: 0 0 0 2px var(--accent-soft-outline);
+}
+
+.editor-wrapper:focus-within .editor-line-numbers {
+  color: var(--text-primary);
+}
+
+.editor-line-numbers {
+  padding: 0.75rem 0.75rem 0.75rem 1rem;
+  text-align: right;
+  min-width: 3ch;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  border-right: 1px solid var(--panel-border);
+  user-select: none;
+  white-space: pre;
+  background: linear-gradient(
+    to bottom,
+    rgba(148, 163, 184, 0.12),
+    rgba(148, 163, 184, 0.04)
+  );
+}
+
+.editor-line-numbers span {
+  display: block;
+}
+
 .editor-input {
   width: 100%;
   min-height: clamp(12rem, 35vw, 18rem);
   resize: vertical;
-  border-radius: 0.75rem;
-  border: 1px solid var(--panel-border);
+  border-radius: 0;
+  border: none;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   line-height: 1.5;
-  background: var(--panel-soft-bg);
+  background: transparent;
   color: var(--text-primary);
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  flex: 1;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .editor-input:focus {
   outline: none;
-  border-color: var(--button-hover-border);
-  box-shadow: 0 0 0 2px var(--accent-soft-outline);
+  box-shadow: none;
 }
 
 .preview-output {
